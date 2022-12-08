@@ -63,16 +63,18 @@ fn gd_injest(project:&mut Vec<u16>, stdout:&str) {
 fn main() {
     let mut gst = Command::new("git");
     let git_status = gst.args(["status", "--porcelain"]).output().expect("[ERROR] git status");
-    let mut gd = Command::new("git");
-    let git_diff = gd.args(["diff", "--shortstat"]).output().expect("[ERROR] git diff");
 
     let mut project: Vec<u16> = vec![0;8];
 
     if let Ok(git_status_stdout) = str::from_utf8(&git_status.stdout) {
         gst_injest(&mut project, &git_status_stdout);
-        if let Ok(git_diff_stdout) = str::from_utf8(&git_diff.stdout) {
-            gd_injest(&mut project, &git_diff_stdout);
-            println!("{}",fmt_status(project));
+        if project[0] != 0 {
+            let mut gd = Command::new("git");
+            let git_diff = gd.args(["diff", "--shortstat"]).output().expect("[ERROR] git diff");
+            if let Ok(git_diff_stdout) = str::from_utf8(&git_diff.stdout) {
+                gd_injest(&mut project, &git_diff_stdout);
+                println!("{}",fmt_status(project));
+            }
         }
     } else {
         println!("Wrong git status format given");
